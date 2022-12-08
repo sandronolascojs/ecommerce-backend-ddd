@@ -1,0 +1,143 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Administrator {
+  id           String               @id @default(uuid())
+  email        String               @unique
+  password     String
+  firstname    String 
+  lastname     String
+  role         String
+  status       String
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@map("administrators")
+}
+
+model Address {
+  id                    String      @id @default(uuid())
+  customer              Customer    @relation(fields: [customerId], references: [id])
+  customerId            String  
+  orderAddress          Order[] 
+  phone                 String
+  address               String
+  city                  String
+  state                 String
+  postalCode            String
+  country               String
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  @@map("customerAddresses")
+}
+
+model Customer {
+  id           String      @id @default(uuid())
+  email        String      @unique
+  password     String       
+  firstname    String 
+  lastname     String
+  addresses    Address[]
+  orders       Order[]
+  refreshToken refreshToken[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@map("customers")
+}
+
+model Product {
+  id              String      @id @default(uuid())
+  name            String
+  description     String
+  stock           Int
+  price           Int
+  image           String
+  category        Category    @relation(fields: [categoryId], references: [id])
+  categoryId      String
+  subCategory     SubCategory @relation(fields: [subCategoryId], references: [id])
+  subCategoryId   String
+  orderItems      OrderItem[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@map("products")
+}
+
+model Category {
+  id            String      @id @default(uuid())
+  name          String
+  description   String
+  image         String
+  products      Product[]
+  subCategories SubCategory[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@map("categories")
+}
+
+model SubCategory {
+  id           String      @id @default(uuid())
+  name         String
+  description  String
+  image        String
+  category     Category    @relation(fields: [categoryId], references: [id])
+  categoryId   String
+  products     Product[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@map("subCategories")
+}
+
+model Order {
+  id                String      @id @default(uuid())
+  customer          Customer    @relation(fields: [customerId], references: [id])
+  customerId        String
+  total             Int
+  orderNumber       Int         @default(autoincrement())
+  status            String      
+  orderAddressId    String
+  orderAddress      Address     @relation(fields: [orderAddressId], references: [id])  
+  orderItems        OrderItem[]
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id           String      @id @default(uuid())
+  order        Order       @relation(fields: [orderId], references: [id])
+  orderId      String      
+  product      Product     @relation(fields: [productId], references: [id])
+  productId    String
+  quantity     Int
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@map("orderItems")
+}
+
+model refreshToken  {
+  id           String      @id @default(uuid())
+  token        String      @unique
+  expiredTime  Int         
+  customer     Customer    @relation(fields: [customerId], references: [id])
+  customerId   String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@map("refreshTokens")
+}
